@@ -22,6 +22,7 @@ const cleanName = s => (String(s || '').replace(/[^\w .\-]/g, '').trim().slice(0
 const pub = p => ({ id: p.id, name: p.name, elo: p.elo, w: p.w, l: p.l, hist: p.hist.slice(0, 8) });
 
 const queue = { eu: [], am: [], as: [] }; // entries: {id, maps}
+const ipOf = new Map();                   // playerId -> last seen IPv4
 const conns = new Map();                  // playerId -> ws
 const matches = new Map(), inMatch = new Map(); // matchId -> match, playerId -> matchId
 
@@ -45,6 +46,7 @@ function tryMatch(region) {
   [0, 1, 1, 0, 0, 1, 1, 0, 0, 1].forEach((s, i) => (s ? B : A).push(ps[i].id)); // snake draft for balanced teams
   const m = { id: rid(6), region, map: cands[Math.floor(Math.random() * cands.length)], players: ps, A, B,
     host: ps[Math.floor(Math.random() * 10)].id, pw: rid(3), addr: '', reports: {}, created: Date.now() };
+  const hip = ipOf.get(m.host); if (hip) m.addr = hip + ':27015'; // host's IP is pre-filled; they can change it
   matches.set(m.id, m);
   ps.forEach(p => { inMatch.set(p.id, m.id); send(p.id, { t: 'match', match: view(m) }); });
   pushQueue(region);
@@ -85,7 +87,8 @@ const server = http.createServer((req, res) => {
 });
 const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 2048 });
 
-wss.on('connection', ws => {
+wss.on('connection', (ws, req) => {
+  const ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim().replace(/^::ffff:/, '');
   let id = null, count = 0;
   const rl = setInterval(() => count = 0, 10000);
   ws.on('message', raw => {
@@ -98,7 +101,7 @@ wss.on('connection', ws => {
         p = players[pid] = { id: pid, name: cleanName(), elo: 1000, w: 0, l: 0, hist: [], hash: sha(token) };
         byHash[p.hash] = pid; dirty = true;
       }
-      id = p.id; const old = conns.get(id); if (old && old !== ws) old.close(); conns.set(id, ws);
+      id = p.id; const old = conns.get(id); if (old && old !== ws) old.close(); conns.set(id, ws); if (/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)) ipOf.set(id, ip);
       ws.send(JSON.stringify({ t: 'me', token, me: pub(p) }));
       const mid = inMatch.get(id); if (mid) ws.send(JSON.stringify({ t: 'match', match: view(matches.get(mid)) }));
       pushLb(); return;

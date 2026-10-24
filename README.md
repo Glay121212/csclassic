@@ -41,3 +41,7 @@ They only run short serverless functions, so the Node server cannot run there (y
 
 - **Host everything on Render/Railway/Fly** (simplest, see above), or
 - **Split it:** deploy this repo's `server.js` to Render/Railway/Fly, then deploy the same repo to Vercel as a static site (`vercel.json` serves `public/`). Edit `public/config.js` and set `window.PUG_SERVER` to your backend host (no `https://`), commit, and redeploy.
+
+## Who hosts the game?
+
+No dedicated game server is needed. The matchmaking service (this repo) only coordinates players. When a match starts it picks one of the 10 at random as host and pre-fills that player's public IP with port 27015. The host runs `hlds` on their own PC with the command shown, and the other nine connect to them. The host's IP is visible to the other players in that match.
