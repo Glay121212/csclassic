@@ -1,0 +1,10 @@
+{
+  "name": "pug16",
+  "version": "1.0.0",
+  "description": "Browser matchmaking for CS 1.6 5v5 classic pugs: regions, ranked ratings, no Steam login",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "dependencies": { "ws": "^8.18.0" },
+  "license": "MIT"
+}
