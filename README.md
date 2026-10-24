@@ -34,3 +34,10 @@ GitHub Pages cannot run this, because it only hosts static files and the app nee
 - **Smurfing and multi-accounts:** accounts are anonymous (a token in the browser), so someone can create a new account. Add IP limits or sign-in later if that becomes a problem.
 - **Hosts need a reachable server:** the host must forward UDP port 27015 on their router. Consider requiring this in your rules.
 - Ratings live in `DATA_DIR/players.json`. Back it up. For heavy traffic, swap it for SQLite or Postgres.
+
+## If you use Vercel or Netlify
+
+They only run short serverless functions, so the Node server cannot run there (you get `500 FUNCTION_INVOCATION_FAILED`). Either:
+
+- **Host everything on Render/Railway/Fly** (simplest, see above), or
+- **Split it:** deploy this repo's `server.js` to Render/Railway/Fly, then deploy the same repo to Vercel as a static site (`vercel.json` serves `public/`). Edit `public/config.js` and set `window.PUG_SERVER` to your backend host (no `https://`), commit, and redeploy.

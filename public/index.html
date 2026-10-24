@@ -91,6 +91,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}td{padding:6px 4px;bord
 <h2 style="margin-top:22px">Your matches</h2><table id="hist"><tr><td style="color:var(--mute)">No matches yet</td></tr></table>
 <p class="note">Recruit under 900, Regular 900, Veteran 1100, Elite 1300, Legend 1500+. New players start at 1000.</p></aside>
 </div>
+<script src="config.js"></script>
 <script>
 const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const MAPN={de_inferno:"Inferno",de_dust2:"Dust2",de_mirage:"Mirage"},RN={eu:"Europe",am:"Americas",as:"Asia"};
@@ -108,7 +109,7 @@ function head(){if(!me)return;$("elo").textContent=me.elo;$("tier").textContent=
 function stats(){if(!lastLb)return;$("online").textContent=lastLb.online+" online. Waiting in "+RN[region]+": "+lastLb.q[region]+" of 10."}
 const send=o=>ws&&ws.readyState===1&&ws.send(JSON.stringify(o));
 function connect(){
- ws=new WebSocket((location.protocol==="https:"?"wss://":"ws://")+location.host+"/ws");
+ const base=(window.PUG_SERVER||location.host).replace(/^https?:\/\//,"");ws=new WebSocket((window.PUG_SERVER?"wss://":location.protocol==="https:"?"wss://":"ws://")+base+"/ws");
  ws.onopen=()=>send({t:"hello",token:ls("pug_token")});
  ws.onclose=()=>{clearInterval(ti);$("offMsg").textContent="Connection lost. Reconnecting…";go("vOff");setTimeout(connect,2000)};
  ws.onmessage=ev=>{const m=JSON.parse(ev.data);

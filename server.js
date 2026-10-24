@@ -79,6 +79,7 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     return fs.createReadStream(path.join(__dirname, 'public', 'index.html')).pipe(res);
   }
+  if (req.url === '/config.js') { res.writeHead(200, { 'Content-Type': 'text/javascript' }); return res.end('window.PUG_SERVER="";'); }
   if (req.url === '/health') return res.end('ok');
   res.writeHead(404).end('not found');
 });
